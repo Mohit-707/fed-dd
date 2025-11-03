@@ -1,0 +1,28 @@
+[Unit]
+Description=Donation Platform Server
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/donation-platform
+ExecStart=/usr/bin/node server/dist/index.js
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+Environment=PATH=/usr/bin:/usr/local/bin
+
+# Logging
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=donation-platform
+
+# Security
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/donation-platform/server/uploads /opt/donation-platform/server
+
+[Install]
+WantedBy=multi-user.target
