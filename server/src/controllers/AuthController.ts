@@ -1,35 +1,38 @@
-import { Request, Response } from 'express'
+import { Response } from 'express'
 import { AuthService } from '../services/AuthService'
-import { ApiResponse, LoginRequest, RegisterRequest } from '../types'
+import { ApiResponse, LoginRequest, RegisterRequest, AuthenticatedRequest } from '../types'
 
 export class AuthController {
-  static async register(req: Request, res: Response) {
+  static async register(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const data: RegisterRequest = req.body
 
       // Validate required fields
       if (!data.email || !data.password || !data.role || !data.firstName || !data.lastName) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Missing required fields'
         } as ApiResponse)
+        return
       }
 
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       if (!emailRegex.test(data.email)) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Invalid email format'
         } as ApiResponse)
+        return
       }
 
       // Validate password length
       if (data.password.length < 8) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Password must be at least 8 characters long'
         } as ApiResponse)
+        return
       }
 
       const user = await AuthService.register(data)
@@ -53,16 +56,17 @@ export class AuthController {
     }
   }
 
-  static async login(req: Request, res: Response) {
+  static async login(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const data: LoginRequest = req.body
 
       // Validate required fields
       if (!data.email || !data.password || !data.role) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Email, password, and role are required'
         } as ApiResponse)
+        return
       }
 
       const user = await AuthService.login(data)
@@ -86,16 +90,17 @@ export class AuthController {
     }
   }
 
-  static async logout(req: Request, res: Response) {
+  static async logout(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       // Destroy session
-      req.session?.destroy((err) => {
+      req.session?.destroy((err: any) => {
         if (err) {
           console.error('Logout error:', err)
-          return res.status(500).json({
+          res.status(500).json({
             success: false,
             error: 'Logout failed'
           } as ApiResponse)
+          return
         }
 
         res.clearCookie('connect.sid')
@@ -113,15 +118,24 @@ export class AuthController {
     }
   }
 
-  static async getProfile(req: any, res: Response) {
+  static async getProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'User not authenticated'
+        } as ApiResponse)
+        return
+      }
+
       const user = await AuthService.getUserById(req.user.id)
 
       if (!user) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           error: 'User not found'
         } as ApiResponse)
+        return
       }
 
       res.json({
@@ -137,8 +151,16 @@ export class AuthController {
     }
   }
 
-  static async updateProfile(req: any, res: Response) {
+  static async updateProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'User not authenticated'
+        } as ApiResponse)
+        return
+      }
+
       const userId = req.user.id
       const data = req.body
 
@@ -157,23 +179,33 @@ export class AuthController {
     }
   }
 
-  static async changePassword(req: any, res: Response) {
+  static async changePassword(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
+      if (!req.user) {
+        res.status(401).json({
+          success: false,
+          error: 'User not authenticated'
+        } as ApiResponse)
+        return
+      }
+
       const userId = req.user.id
       const { currentPassword, newPassword } = req.body
 
       if (!currentPassword || !newPassword) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'Current password and new password are required'
         } as ApiResponse)
+        return
       }
 
       if (newPassword.length < 8) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           error: 'New password must be at least 8 characters long'
         } as ApiResponse)
+        return
       }
 
       const result = await AuthService.changePassword(userId, currentPassword, newPassword)
@@ -191,7 +223,7 @@ export class AuthController {
     }
   }
 
-  static async checkAuth(req: any, res: Response) {
+  static async checkAuth(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
       const user = req.user
 
