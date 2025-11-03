@@ -45,7 +45,7 @@ model DonationItem {
   condition   ItemCondition
   status      DonationStatus @default(AVAILABLE)
   expiryDate  DateTime?     @map("expiry_date")
-  images      String[]      // Array of image URLs
+  images      String?       // JSON string of image URLs
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
