@@ -70,7 +70,7 @@ model DonationDrive {
   createdAt     DateTime      @default(now()) @map("created_at")
 
   // Relations
-  creator       User          @relation(fields: [createdBy], references: [id])
+  creator       User          @relation("AdminDrives", fields: [createdBy], references: [id])
 
   @@map("donation_drives")
 }
