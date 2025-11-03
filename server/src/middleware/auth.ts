@@ -34,7 +34,7 @@ export const requireRole = (roles: string[]) => {
   }
 }
 
-export const setUserFromSession = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const setUserFromSession = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   if (req.session?.userId) {
     try {
       const { prisma } = await import('../lib/prisma')
@@ -50,6 +50,8 @@ export const setUserFromSession = async (req: AuthenticatedRequest, res: Respons
           address: true,
           isVerified: true,
           isActive: true,
+          createdAt: true,
+          updatedAt: true,
         }
       })
 
