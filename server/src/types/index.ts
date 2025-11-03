@@ -1,7 +1,16 @@
 import { Request as ExpressRequest, Response } from 'express'
 import { User, UserRole } from '@prisma/client'
+import { Session } from 'express-session'
+
+declare module 'express-session' {
+  interface SessionData {
+    userId?: string
+    userRole?: UserRole
+  }
+}
 
 export interface AuthenticatedRequest extends ExpressRequest {
+  session?: Session & Partial<SessionData>
   user?: User
 }
 
