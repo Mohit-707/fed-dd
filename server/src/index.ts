@@ -78,7 +78,14 @@ app.get('/api/health', (req, res) => {
 
 // Serve React app for all non-API routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../client/dist/index.html'))
+  if (!req.path.startsWith('/api')) {
+    res.sendFile(path.join(__dirname, '../../client/dist/index.html'))
+  } else {
+    res.status(404).json({
+      success: false,
+      error: 'API endpoint not found',
+    })
+  }
 })
 
 // Socket.IO connection handling
