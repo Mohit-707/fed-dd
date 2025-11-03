@@ -161,7 +161,7 @@ export class AuthController {
         return
       }
 
-      const userId = req.user.id
+      const userId = req.user.id!
       const data = req.body
 
       const user = await AuthService.updateProfile(userId, data)
@@ -189,7 +189,7 @@ export class AuthController {
         return
       }
 
-      const userId = req.user.id
+      const userId = req.user.id!
       const { currentPassword, newPassword } = req.body
 
       if (!currentPassword || !newPassword) {
