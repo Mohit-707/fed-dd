@@ -1,0 +1,158 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  passwordHash String  @map("password_hash")
+  role        UserRole
+  firstName   String   @map("first_name")
+  lastName    String   @map("last_name")
+  phone       String?
+  address     String?
+  isVerified  Boolean  @default(false) @map("is_verified")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  donatedItems     DonationItem[]
+  receivedItems    Donation[]     @relation("RecipientDonations")
+  managedDrives    DonationDrive[] @relation("AdminDrives")
+  requests         Request[]
+  logisticsDonations Donation[] @relation("LogisticsDonations")
+
+  @@map("users")
+}
+
+model DonationItem {
+  id          String        @id @default(cuid())
+  donorId     String        @map("donor_id")
+  category    ItemCategory
+  itemName    String        @map("item_name")
+  description String?
+  quantity    Int
+  unit        String
+  condition   ItemCondition
+  status      DonationStatus @default(AVAILABLE)
+  expiryDate  DateTime?     @map("expiry_date")
+  images      String[]      // Array of image URLs
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  donor       User           @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  donations   Donation[]
+
+  @@map("donation_items")
+}
+
+model DonationDrive {
+  id            String        @id @default(cuid())
+  title         String
+  description   String
+  urgencyLevel  UrgencyLevel  @map("urgency_level")
+  startDate     DateTime      @map("start_date")
+  endDate       DateTime      @map("end_date")
+  targetItems   Json?         // JSON for desired items and quantities
+  location      String
+  isActive      Boolean       @default(true) @map("is_active")
+  createdBy     String        @map("created_by")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  creator       User          @relation(fields: [createdBy], references: [id])
+
+  @@map("donation_drives")
+}
+
+model Request {
+  id              String        @id @default(cuid())
+  recipientId     String        @map("recipient_id")
+  itemCategory    ItemCategory  @map("item_category")
+  specificNeeds   String        @map("specific_needs")
+  urgencyLevel    UrgencyLevel  @map("urgency_level")
+  quantityNeeded  Int           @map("quantity_needed")
+  status          RequestStatus @default(OPEN)
+  isEmergency     Boolean       @default(false) @map("is_emergency")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  recipient       User          @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  donations       Donation[]
+
+  @@map("requests")
+}
+
+model Donation {
+  id           String        @id @default(cuid())
+  itemId       String        @map("item_id")
+  requestId    String        @map("request_id")
+  logisticsId  String?       @map("logistics_id")
+  status       DonationStatus @default(PENDING)
+  dispatchedAt DateTime?     @map("dispatched_at")
+  deliveredAt  DateTime?     @map("delivered_at")
+  notes        String?
+
+  // Relations
+  item         DonationItem  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  request      Request       @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  recipient    User          @relation("RecipientDonations", fields: [requestId], references: [id])
+  logistics    User?         @relation("LogisticsDonations", fields: [logisticsId], references: [id])
+
+  @@map("donations")
+}
+
+// Enums
+enum UserRole {
+  ADMIN
+  DONOR
+  RECIPIENT
+  LOGISTICS
+}
+
+enum ItemCategory {
+  FOOD
+  CLOTHING
+  MEDICAL
+  OTHER
+}
+
+enum ItemCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+}
+
+enum DonationStatus {
+  AVAILABLE
+  PENDING
+  DISPATCHED
+  IN_TRANSIT
+  DELIVERED
+  CANCELLED
+}
+
+enum RequestStatus {
+  OPEN
+  MATCHED
+  FULFILLED
+  CANCELLED
+}
+
+enum UrgencyLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
