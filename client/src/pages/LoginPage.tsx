@@ -104,14 +104,14 @@ const LoginPage: React.FC = () => {
         const loginData: LoginRequest = {
           email: formData.email,
           password: formData.password,
-          role: selectedRole,
+          role: selectedRole!,
         }
         await login(loginData)
       } else {
         const registerData: RegisterRequest = {
           email: formData.email,
           password: formData.password,
-          role: selectedRole,
+          role: selectedRole!,
           firstName: formData.firstName,
           lastName: formData.lastName,
           phone: formData.phone || undefined,
