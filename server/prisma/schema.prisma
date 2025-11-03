@@ -27,7 +27,7 @@ model User {
   // Relations
   donatedItems     DonationItem[]
   receivedItems    Donation[]     @relation("RecipientDonations")
-  managedDrives    DonationDrive[]
+  managedDrives    DonationDrive[] @relation("AdminDrives")
   requests         Request[]
   logisticsDonations Donation[] @relation("LogisticsDonations")
 
