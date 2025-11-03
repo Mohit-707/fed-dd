@@ -32,6 +32,7 @@
     "vite": "^7.1.12"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.16",
     "@types/node": "^24.10.0",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
