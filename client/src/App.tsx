@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './hooks/useAuth'
 import LoginPage from './pages/LoginPage'
 import AdminDashboard from './pages/admin/AdminDashboard'
@@ -7,7 +8,7 @@ import RecipientDashboard from './pages/recipient/RecipientDashboard'
 import LogisticsDashboard from './pages/logistics/LogisticsDashboard'
 import LoadingSpinner from './components/common/LoadingSpinner'
 
-function App() {
+function AppRoutes() {
   const { isAuthenticated, user, loading } = useAuth()
 
   if (loading) {
@@ -48,6 +49,14 @@ function App() {
       <Route path="/" element={<Navigate to={getDashboardRoute()} replace />} />
       <Route path="*" element={<Navigate to={getDashboardRoute()} replace />} />
     </Routes>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   )
 }
 
